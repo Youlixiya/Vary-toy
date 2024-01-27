@@ -205,9 +205,9 @@ class varyOPTForCausalLM(OPTForCausalLM):
     config_class = varyConfig
     # supports_gradient_checkpointing = True
 
-    def __init__(self, config):
+    def __init__(self, config, **kwargs):
         super(OPTForCausalLM, self).__init__(config)
-        self.model = varyOPTModel(config)
+        self.model = varyOPTModel(config, **kwargs)
 
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
 
