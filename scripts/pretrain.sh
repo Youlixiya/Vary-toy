@@ -2,7 +2,7 @@ deepspeed   --include "localhost:0,2,3,4" vary/train/train_opt.py\
             --deepspeed zero_config/zero2.json\
             --model_name_or_path facebook/opt-125m\
             --conversation_version caption\
-            --freeze_vision_tower False\
+            --freeze_vision_tower True\
             --freeze_lm_model False\
             --use_im_start_end True\
             --bf16 True\

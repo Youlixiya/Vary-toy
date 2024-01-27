@@ -27,7 +27,7 @@ from vary.utils.constants import *
 from vary.model.vision_encoder.sam import build_sam_vit_b
 try:
     import flash_attn
-    use_flash_attention_2 =False
+    use_flash_attention_2 =True
 except:
     use_flash_attention_2 = False
 
@@ -40,7 +40,7 @@ def train():
         dtype = torch.float16
     if training_args.bf16:
         dtype = torch.bfloat16
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path, use_fast=False, padding_side="right", model_max_length=training_args.model_max_length)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path, use_fast=False, use_flash_attention_2=use_flash_attention_2, padding_side="right", model_max_length=training_args.model_max_length)
 
 
     model = varyOPTForCausalLM.from_pretrained(model_args.model_name_or_path, torch_dtype=dtype, **(model_args.extra_model_args))
