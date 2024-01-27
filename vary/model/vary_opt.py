@@ -59,7 +59,7 @@ class varyOPTModel(OPTModel):
         # self.tap.concept_projector.reset_weights(config.concept_weights)
         # self.tap.text_decoder.reset_cache(max_batch_size=8)
         # self.vision_tower = self.tap.image_encoder
-        sam = sam_model_registry[config.sam_model_type](checkpoint=config.sam_checkpoint).eval()
+        sam = sam_model_registry[config.sam_model_type](checkpoint=config.sam_checkpoint)
         self.vision_tower = sam.image_encoder
         self.sam_adaptor = nn.Sequential(nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1, bias=False),
                                          nn.Conv2d(512, 1024, kernel_size=3, stride=2, padding=1, bias=False))

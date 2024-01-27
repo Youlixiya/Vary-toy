@@ -5,7 +5,7 @@ deepspeed   --include "localhost:0,2,3,4" vary/train/train_opt.py\
             --freeze_vision_tower False\
             --freeze_lm_model False\
             --use_im_start_end True\
-            --bf16 False\
+            --bf16 True\
             --per_device_eval_batch_size 4\
             --gradient_accumulation_steps 1\
             --evaluation_strategy "no"\
