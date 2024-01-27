@@ -55,7 +55,7 @@ class varyOPTModel(OPTModel):
             
         self.config = config
         # self.vision_tower = build_sam_vit_b()
-        self.tap = model_registry[config.tap_model_type](checkpoint=config.tap_checkpoint)
+        self.tap = model_registry[config.tap_model_type](checkpoint=config.tap_checkpoint).eval()
         self.tap.concept_projector.reset_weights(config.concept_weights)
         self.tap.text_decoder.reset_cache(max_batch_size=8)
         self.vision_tower = self.tap.image_encoder

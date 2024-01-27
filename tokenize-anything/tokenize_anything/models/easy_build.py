@@ -17,9 +17,9 @@
 
 from functools import partial
 import pickle
-
+from copy import deepcopy
 import torch
-
+from torch import nn
 from tokenize_anything.modeling import ConceptProjector
 from tokenize_anything.modeling import ImageDecoder
 from tokenize_anything.modeling import ImageEncoderViT
@@ -63,8 +63,41 @@ def vit_encoder(depth, embed_dim, num_heads, out_dim, image_size):
         out_dim=out_dim,
     )
 
+def convert_syncbn_to_bn(model):
+    """
+    Convert nn.SyncBatchNorm to nn.BatchNorm in the given model.
 
-def image_tokenizer(image_encoder, checkpoint=None, device=0, dtype="float32", **kwargs):
+    Args:
+    - model (nn.Module): The input model with nn.SyncBatchNorm layers.
+
+    Returns:
+    - nn.Module: A new model with nn.BatchNorm layers replacing nn.SyncBatchNorm.
+    """
+    new_model = deepcopy(model)
+
+    for name, module in model.named_children():
+        if isinstance(module, nn.SyncBatchNorm):
+            # Create equivalent BatchNorm layer
+            bn_module = nn.BatchNorm2d(module.num_features, eps=module.eps, momentum=module.momentum, affine=module.affine)
+
+            # Transfer running statistics
+            bn_module.running_mean = module.running_mean.clone()
+            bn_module.running_var = module.running_var.clone()
+
+            # Transfer learnable parameters if applicable
+            if module.affine:
+                bn_module.weight.data = module.weight.data.clone()
+                bn_module.bias.data = module.bias.data.clone()
+
+            new_model.add_module(name, bn_module)
+        else:
+            # Recursively apply the function to sub-modules
+            new_model.add_module(name, convert_syncbn_to_bn(module))
+    del model
+    torch.cuda.empty_cache()
+
+    return new_model
+def image_tokenizer(image_encoder, checkpoint=None, device=0, dtype="float16", **kwargs):
     """Build an image tokenizer."""
     image_size = kwargs.get("image_size", 1024)
     prompt_embed_dim = kwargs.get("prompt_embed_dim", 256)

@@ -22,8 +22,8 @@ dist
 wandb
 output
 
-checkpoints
-ckpts*
+./checkpoints
+./ckpts*
 
 .ipynb_checkpoints
 *.ipynb
