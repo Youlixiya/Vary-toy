@@ -38,8 +38,8 @@ CONVERSATION_DATA = {
         'annotations': "data/LLaVA-v1.5/llava_v1_5_mix665k.json",
     },
     'refer_coco': {
-        'images': "refercocos/images/tran2014/",
-        'annotations': "refercocos/REC_ref3_train.json",
+        'images': "refcocos/images/tran2014/",
+        'annotations': "refcocos/REC_ref3_train.json",
     },
     'pdf': {
         'images': "",
