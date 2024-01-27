@@ -166,29 +166,29 @@ class ConversationDataset(BaseDataset):
                 if rou == "":
                     break   
                 parts = rou.split(sep)
-            if len(parts) != 2:
-                break
-            parts[0] += sep
+                if len(parts) != 2:
+                    break
+                parts[0] += sep
 
-            if has_image:
-                round_len = len(tokenizer_image_token(rou, self.tokenizer))
-                instruction_len = len(tokenizer_image_token(parts[0], self.tokenizer)) - 2
-            else:
-                round_len = len(self.tokenizer(rou).input_ids)
-                instruction_len = len(self.tokenizer(parts[0]).input_ids) - 2
+                if has_image:
+                    round_len = len(tokenizer_image_token(rou, self.tokenizer))
+                    instruction_len = len(tokenizer_image_token(parts[0], self.tokenizer)) - 2
+                else:
+                    round_len = len(self.tokenizer(rou).input_ids)
+                    instruction_len = len(self.tokenizer(parts[0]).input_ids) - 2
 
-            target[cur_len : cur_len + instruction_len] = IGNORE_INDEX
+                target[cur_len : cur_len + instruction_len] = IGNORE_INDEX
 
-            cur_len += round_len
-        target[cur_len:] = IGNORE_INDEX
+                cur_len += round_len
+            target[cur_len:] = IGNORE_INDEX
 
-        if cur_len < self.tokenizer.model_max_length:
-            if cur_len != total_len:
-                target[:] = IGNORE_INDEX
-                print(
-                    f"WARNING: tokenization mismatch: {cur_len} vs. {total_len}."
-                    f" (ignored)"
-                )
+            if cur_len < self.tokenizer.model_max_length:
+                if cur_len != total_len:
+                    target[:] = IGNORE_INDEX
+                    print(
+                        f"WARNING: tokenization mismatch: {cur_len} vs. {total_len}."
+                        f" (ignored)"
+                    )
         return dict(
         input_ids=input_ids,
         labels=targets,
