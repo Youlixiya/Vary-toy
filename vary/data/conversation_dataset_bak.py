@@ -51,12 +51,8 @@ class ConversationDataset(BaseDataset):
         list_data_dict_new, list_image_path_new = zip(*a_new_list)
         self.list_data_dict = list_data_dict_new
         self.list_image_path = list_image_path_new
-
-        self.im_patch_token = 151859
-
-        self.im_start_token = 151857
-
-        self.im_end_token = 151858
+        self.im_patch_token, self.im_start_token, self.im_end_token = tokenizer.convert_tokens_to_ids(
+            [DEFAULT_IMAGE_PATCH_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN])
     
     def multimodal_processor(self, sources):
         for source in sources:
@@ -71,30 +67,37 @@ class ConversationDataset(BaseDataset):
                 sentence["value"] = str(sentence["value"]).replace(DEFAULT_IMAGE_TOKEN, replace_token)
         return sources
 
-    # def _tokenize_fn(self, strings):
-    #     """Tokenize a list of strings."""
-    #     tokenized_list = [
-    #         self.tokenizer(
-    #             text,
-    #             return_tensors="pt",
-    #             padding="longest",
-    #             max_length=self.tokenizer.model_max_length,
-    #             truncation=True,
-    #         ) for text in strings
-    #     ]
-    #     input_ids = labels = [
-    #         tokenized.input_ids[0] for tokenized in tokenized_list
-    #     ]
-    #     input_ids_lens = labels_lens = [
-    #         tokenized.input_ids.ne(self.tokenizer.pad_token_id).sum().item()
-    #         for tokenized in tokenized_list
-    #     ]
-    #     return dict(
-    #         input_ids=input_ids,
-    #         labels=labels,
-    #         input_ids_lens=input_ids_lens,
-    #         labels_lens=labels_lens,
-    #     )
+    def _tokenize_fn(self, strings):
+        """Tokenize a list of strings."""
+        tokenized_list = [
+            self.tokenizer(
+                text,
+                return_tensors="pt",
+                padding="longest",
+                max_length=self.tokenizer.model_max_length,
+                truncation=True,
+            ) for text in strings
+        ]
+        input_ids = labels = [
+            tokenized.input_ids[0] for tokenized in tokenized_list
+        ]
+
+        
+        # for idx, ii in enumerate(input_ids):
+        #     if ii[-1] != 2:
+        #         input_ids[idx][-1] = 2
+        #         labels[idx][-1] = 2
+
+        input_ids_lens = labels_lens = [
+            tokenized.input_ids.ne(self.tokenizer.pad_token_id).sum().item()
+            for tokenized in tokenized_list
+        ]
+        return dict(
+            input_ids=input_ids,
+            labels=labels,
+            input_ids_lens=input_ids_lens,
+            labels_lens=labels_lens,
+        )
 
     def _mask_targets(self, target, tokenized_lens, speakers):
         # cur_idx = 0
@@ -123,20 +126,17 @@ class ConversationDataset(BaseDataset):
                 assert role == conv.roles[j % 2], f"{i}"
                 conv.append_message(role, sentence["value"])
             conversations.append(conv.get_prompt())
+        
+        # print(conversations)
 
         # Tokenize conversations
 
 
-        input_ids = self.tokenizer(
-            conversations,
-            return_tensors="pt",
-            padding="longest",
-            max_length=self.tokenizer.model_max_length,
-            truncation=True,
-        ).input_ids
+        conversations_tokenized = self._tokenize_fn(conversations)
+        input_ids = conversations_tokenized["input_ids"]
 
         # input_ids = torch.stack([tokenizer_image_token(prompt, tokenizer, return_tensors='pt') for prompt in conversations], dim=0)
-        targets = input_ids.clone()
+        targets = copy.deepcopy(input_ids)
         assert conv.sep_style == conversation_lib.SeparatorStyle.MPT
 
         # Mask targets
@@ -158,9 +158,11 @@ class ConversationDataset(BaseDataset):
                 if len(parts) != 2:
                     break
                 parts[0] += sep
-                round_len = len(self.tokenizer(rou).input_ids) + len(self.tokenizer(conv.sep).input_ids)
+                # round_len = len(self.tokenizer(rou).input_ids) + len(self.tokenizer(conv.sep).input_ids)
+                round_len = sum(self._tokenize_fn([rou, conv.sep])["input_ids_lens"])
 
-                instruction_len = len(self.tokenizer(parts[0]).input_ids)
+                # instruction_len = len(self.tokenizer(parts[0]).input_ids)
+                instruction_len = sum(self._tokenize_fn([parts[0]])["input_ids_lens"])
                 target[cur_len : cur_len + instruction_len] = IGNORE_INDEX
 
                 cur_len += round_len

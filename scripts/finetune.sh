@@ -24,5 +24,5 @@ deepspeed   --include "localhost:0,2,3,4" vary/train/train_opt.py\
             --per_device_train_batch_size 16\
             --num_train_epochs 1\
             --learning_rate 5e-5\
-            --datasets  llava_v1.5_finetune+refer_coco\
+            --datasets  llava_v1.5_finetune\
             --output_dir ./ckpts/llava-opt-v1.0-125m
