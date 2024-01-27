@@ -60,7 +60,7 @@ class varyOPTModel(OPTModel):
         # self.tap.text_decoder.reset_cache(max_batch_size=8)
         # self.vision_tower = self.tap.image_encoder
         sam = sam_model_registry[config.sam_model_type](checkpoint=config.sam_checkpoint).eval()
-        self.vision_tower = self.sam.image_encoder
+        self.vision_tower = sam.image_encoder
 
         self.mm_projector = nn.Linear(1024, 768)
 
