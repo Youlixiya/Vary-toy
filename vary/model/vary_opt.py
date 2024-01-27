@@ -49,8 +49,10 @@ class varyOPTModel(OPTModel):
 
     def __init__(self, config: OPTConfig, **kwargs):
         super(varyOPTModel, self).__init__(config)
+        
         for key, value in kwargs.items():
-            setattr(config. key, value)
+            setattr(config, key, value)
+            
         self.config = config
         # self.vision_tower = build_sam_vit_b()
         self.tap = model_registry[config.tap_model_type](checkpoint=config.tap_checkpoint)
