@@ -134,7 +134,7 @@ def image_tokenizer(image_encoder, checkpoint=None, device=0, dtype="float16", *
     model = model.half() if dtype == "float16" else model
     model = model.bfloat16() if dtype == "bfloat16" else model
     model = model.float() if dtype == "float32" else model
-    return model
+    return convert_syncbn_to_bn(model)
 
 
 vit_b_encoder = partial(vit_encoder, depth=12, embed_dim=768, num_heads=12)
