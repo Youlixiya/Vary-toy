@@ -1,5 +1,5 @@
-deepspeed   --include "localhost:0,2,3,4" Vary-master/train/train_opt.py\
-            --deepspeed /Vary-master/zero_config/zero2.json\
+deepspeed   --include "localhost:0,2,3,4" vary/train/train_opt.py\
+            --deepspeed zero_config/zero2.json\
             --model_name_or_path facebook/opt-125m\
             --conversation_version caption\
             --freeze_vision_tower True\
