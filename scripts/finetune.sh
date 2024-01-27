@@ -9,7 +9,7 @@ deepspeed   --include "localhost:0,2,3,4" vary/train/train_opt.py\
             --use_im_start_end True\
             --bf16 True\
             --per_device_eval_batch_size 4\
-            --gradient_accumulation_steps 1\
+            --gradient_accumulation_steps 8\
             --evaluation_strategy "no"\
             --save_strategy "steps"\
             --save_steps 5000\
@@ -23,7 +23,7 @@ deepspeed   --include "localhost:0,2,3,4" vary/train/train_opt.py\
             --gradient_checkpointing True\
             --dataloader_num_workers 4\
             --report_to none\
-            --per_device_train_batch_size 16\
+            --per_device_train_batch_size 2\
             --num_train_epochs 1\
             --learning_rate 5e-5\
             --datasets  llava_v1.5_finetune\
