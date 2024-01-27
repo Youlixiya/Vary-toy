@@ -83,10 +83,10 @@ class ConversationDataset(BaseDataset):
         ]
 
         
-        for idx, ii in enumerate(input_ids):
-            if ii[-1] != 2:
-                input_ids[idx][-1] = 2
-                labels[idx][-1] = 2
+        # for idx, ii in enumerate(input_ids):
+        #     if ii[-1] != 2:
+        #         input_ids[idx][-1] = 2
+        #         labels[idx][-1] = 2
 
         input_ids_lens = labels_lens = [
             tokenized.input_ids.ne(self.tokenizer.pad_token_id).sum().item()
@@ -126,6 +126,8 @@ class ConversationDataset(BaseDataset):
                 assert role == conv.roles[j % 2], f"{i}"
                 conv.append_message(role, sentence["value"])
             conversations.append(conv.get_prompt())
+        
+        print(conversations)
 
         # Tokenize conversations
 

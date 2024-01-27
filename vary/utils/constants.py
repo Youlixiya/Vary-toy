@@ -39,7 +39,7 @@ CONVERSATION_DATA = {
     },
     'refer_coco': {
         'images': "data/refcocos/images/tran2014/",
-        'annotations': "data/refcocos/REC_ref3_train.json",
+        'annotations': "data/refcocos/ref3_train.json",
     },
     'pdf': {
         'images': "",
