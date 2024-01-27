@@ -35,19 +35,19 @@ def train():
     parser = transformers.HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
-
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path, use_fast=False, padding_side="right", model_max_length=training_args.model_max_length)
-
-
-    model = varyOPTForCausalLM.from_pretrained(model_args.model_name_or_path, use_flash_attention_2=use_flash_attention_2, **(model_args.extra_model_args))
-
-
-
     dtype = torch.float32
     if training_args.fp16:
         dtype = torch.float16
     if training_args.bf16:
         dtype = torch.bfloat16
+    tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path, use_fast=False, padding_side="right", model_max_length=training_args.model_max_length)
+
+
+    model = varyOPTForCausalLM.from_pretrained(model_args.model_name_or_path, torch_dtype=dtype, use_flash_attention_2=use_flash_attention_2, **(model_args.extra_model_args))
+
+
+
+    
 
     vision_tower_dict = model.get_model().initialize_vision_modules(
         vision_tower=model_args.vision_tower,
