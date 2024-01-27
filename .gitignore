@@ -1,0 +1,45 @@
+# Python
+__pycache__
+*.pyc
+*.egg-info
+dist
+
+# Log
+*.log
+*.log.*
+# *.json
+*.jsonl
+
+# Data
+!**/alpaca-data-conversation.json
+
+# Editor
+.idea
+*.swp
+
+# Other
+.DS_Store
+wandb
+output
+
+checkpoints
+ckpts*
+
+.ipynb_checkpoints
+*.ipynb
+
+# DevContainer
+!.devcontainer/*
+
+# Demo
+serve_images/
+build
+# playground/data/LLaVA-Pretrain
+# playground/data/coco
+# playground/data/gqa
+# playground/data/ocr_vqa
+# playground/data/textvqa
+# playground/data/vg
+# playground/data/llava_v1_5_mix665k.json
+data
+*.pt
