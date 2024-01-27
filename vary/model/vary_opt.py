@@ -49,7 +49,7 @@ class varyOPTModel(OPTModel):
 
     def __init__(self, config: OPTConfig, **kwargs):
         super(varyOPTModel, self).__init__(config)
-        for key, value in kwargs:
+        for key, value in kwargs.items():
             setattr(config. key, value)
         self.config = config
         # self.vision_tower = build_sam_vit_b()
