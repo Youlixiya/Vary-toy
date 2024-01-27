@@ -143,7 +143,7 @@ class varyOPTModel(OPTModel):
 
                 with torch.set_grad_enabled(False):
                     cnn_feature = vision_tower(image[1])
-                    cnn_feature = cnn_feature[0].flatten(2).permute(0, 2, 1)
+                    cnn_feature = cnn_feature.flatten(2).permute(0, 2, 1)
                     image_feature_final = cnn_feature
 
                 image_features.append(image_feature_final)
