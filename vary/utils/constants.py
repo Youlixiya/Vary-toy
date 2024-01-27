@@ -34,7 +34,7 @@ CONVERSATION_DATA = {
         'annotations': "data/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json",
     },
     'llava_v1.5_finetune': {
-        'images': "",
+        'images': "data/",
         'annotations': "data/LLaVA-v1.5/llava_v1_5_mix665k.json",
     },
     'refer_coco': {
