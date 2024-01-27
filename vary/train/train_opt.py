@@ -27,7 +27,7 @@ from vary.utils.constants import *
 from vary.model.vision_encoder.sam import build_sam_vit_b
 try:
     import flash_attn
-    use_flash_attention_2 =True
+    use_flash_attention_2 =False
 except:
     use_flash_attention_2 = False
 
