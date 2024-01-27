@@ -336,7 +336,7 @@ class ConversationDataset(BaseDataset):
                     print(f'image {image_file} are broken or grayscale! we thus select 0-th sample instead!')
                     return self.__getitem__(0)
 
-            conversations = self.multimodal_processor([data["conversations"]])
+            conversations = self.preprocess_multimodal([data["conversations"]])
 
         else:
             conversations = [data]
