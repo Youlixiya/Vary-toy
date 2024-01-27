@@ -80,6 +80,8 @@ def train():
         model.requires_grad_(False)
         for p in model.get_model().mm_projector.parameters():
             p.requires_grad = True
+        for p in model.get_model().sam_adaptor.parameters():
+            p.requires_grad = True
 
         for p in model.get_input_embeddings().parameters():
             p.requires_grad = True

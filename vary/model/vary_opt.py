@@ -61,7 +61,8 @@ class varyOPTModel(OPTModel):
         # self.vision_tower = self.tap.image_encoder
         sam = sam_model_registry[config.sam_model_type](checkpoint=config.sam_checkpoint).eval()
         self.vision_tower = sam.image_encoder
-
+        self.sam_adaptor = nn.Sequential(nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1, bias=False),
+                                         nn.Conv2d(512, 1024, kernel_size=3, stride=2, padding=1, bias=False))
         self.mm_projector = nn.Linear(1024, 768)
 
     def initialize_vision_modules(
@@ -143,13 +144,13 @@ class varyOPTModel(OPTModel):
 
                 with torch.set_grad_enabled(False):
                     cnn_feature = vision_tower(image[1])
-                    cnn_feature = cnn_feature.flatten(2).permute(0, 2, 1)
+                    # cnn_feature = cnn_feature.flatten(2).permute(0, 2, 1)
                     image_feature_final = cnn_feature
 
                 image_features.append(image_feature_final)
 
             if type(images) is list:
-                image_features = [self.mm_projector(image_feature) for image_feature in image_features]
+                image_features = [self.mm_projector(self.sam_adaptor(image_feature).flatten(2).permute(0, 2, 1)) for image_feature in image_features]
             else:
                 # image_features = self.mm_projector(image_features)
                 raise NotImplementedError
