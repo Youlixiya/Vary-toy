@@ -69,7 +69,7 @@ def train():
 
 
     model.to(dtype=dtype, device=training_args.device)
-
+    model.config.use_cache = False
     data_args.image_token_len = 256
     data_args.image_processor = vision_tower_dict['image_processor']
     data_args.image_processor_high = vision_tower_dict['image_processor_high']
