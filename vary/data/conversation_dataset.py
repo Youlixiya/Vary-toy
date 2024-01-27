@@ -157,10 +157,10 @@ class ConversationDataset(BaseDataset):
                     break
                 parts[0] += sep
                 # round_len = len(self.tokenizer(rou).input_ids) + len(self.tokenizer(conv.sep).input_ids)
-                round_len = self._tokenize_fn([rou, conv.sep])["input_ids_lens"]
+                round_len = sum(self._tokenize_fn([rou, conv.sep])["input_ids_lens"])
 
                 # instruction_len = len(self.tokenizer(parts[0]).input_ids)
-                instruction_len = self._tokenize_fn([parts[0]])["input_ids_lens"]
+                instruction_len = sum(self._tokenize_fn([parts[0]])["input_ids_lens"])
                 target[cur_len : cur_len + instruction_len] = IGNORE_INDEX
 
                 cur_len += round_len
