@@ -20,7 +20,7 @@ class ModelArguments:
     # })
     extra_model_args: dict = field(default_factory=lambda:{
         "sam_model_type": "vit_b",
-        "sam_checkpoint": "sam_vit_b_01ec64.pth"
+        "sam_checkpoint": "ckpts/sam/sam_vit_b_01ec64.pth"
     })
 
 
