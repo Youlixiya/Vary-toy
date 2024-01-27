@@ -40,10 +40,10 @@ def train():
         dtype = torch.float16
     if training_args.bf16:
         dtype = torch.bfloat16
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path, use_fast=False, use_flash_attention_2=use_flash_attention_2, padding_side="right", model_max_length=training_args.model_max_length)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path, use_fast=False, padding_side="right", model_max_length=training_args.model_max_length)
 
 
-    model = varyOPTForCausalLM.from_pretrained(model_args.model_name_or_path, torch_dtype=dtype, **(model_args.extra_model_args))
+    model = varyOPTForCausalLM.from_pretrained(model_args.model_name_or_path, torch_dtype=dtype, use_flash_attention_2=use_flash_attention_2, **(model_args.extra_model_args))
 
 
 

@@ -1,6 +1,8 @@
+# --model_name_or_path ./ckpts/llava-opt-v1.0-125m-pretrain\ \
+
 deepspeed   --include "localhost:0,2,3,4" vary/train/train_opt.py\
             --deepspeed zero_config/zero2.json\
-            --model_name_or_path ./ckpts/llava-opt-v1.0-125m-pretrain\
+            --model_name_or_path facebook/opt-125m \
             --conversation_version conversation\
             --freeze_vision_tower True\
             --freeze_lm_model False\

@@ -12,8 +12,42 @@ from PIL import Image, ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from vary.data.base_dataset import BaseDataset
+import io
+import os
+import copy
+import json
+import logging
+import torch
+import random
+
+from typing import List, Optional, Tuple, Union, Dict, Sequence
+from PIL import Image, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+from vary.data.base_dataset import BaseDataset
 from vary.utils.constants import *
 from vary.utils import conversation as conversation_lib
+
+def tokenizer_image_token(prompt, tokenizer, image_token_index=IMAGE_TOKEN_INDEX, return_tensors=None):
+    prompt_chunks = [tokenizer(chunk).input_ids for chunk in prompt.split('<image>')]
+
+    def insert_separator(X, sep):
+        return [ele for sublist in zip(X, [sep]*len(X)) for ele in sublist][:-1]
+
+    input_ids = []
+    offset = 0
+    if len(prompt_chunks) > 0 and len(prompt_chunks[0]) > 0 and prompt_chunks[0][0] == tokenizer.bos_token_id:
+        offset = 1
+        input_ids.append(prompt_chunks[0][0])
+
+    for x in insert_separator(prompt_chunks, [image_token_index] * (offset + 1)):
+        input_ids.extend(x[offset:])
+
+    if return_tensors is not None:
+        if return_tensors == 'pt':
+            return torch.tensor(input_ids, dtype=torch.long)
+        raise ValueError(f'Unsupported tensor type: {return_tensors}')
+    return input_ids
 
 class ConversationDataset(BaseDataset):
     """Conversation format dataset stage2 fine-tuning."""
@@ -21,7 +55,7 @@ class ConversationDataset(BaseDataset):
     def __init__(self, datasets, tokenizer, multimodal_cfg):
         super(ConversationDataset, self).__init__(datasets, tokenizer, multimodal_cfg)
         # v0 version format conversation
-        conversation_lib.default_conversation = conversation_lib.conv_templates["mpt"]
+        conversation_lib.default_conversation = conversation_lib.conv_templates["llava_llama_2"]
         logging.warning("Formatting inputs into conversation type: mpt-fixed")
         logging.warning("Loading data...")
 
@@ -55,18 +89,123 @@ class ConversationDataset(BaseDataset):
         self.im_patch_token, self.im_start_token, self.im_end_token = tokenizer.convert_tokens_to_ids(
             [DEFAULT_IMAGE_PATCH_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN])
     
-    def multimodal_processor(self, sources):
+    def preprocess_multimodal(
+        self,
+        sources,
+    ):
+
         for source in sources:
-            if self.multimodal_cfg['sep_image_conv_front']:
-                assert DEFAULT_IMAGE_TOKEN in source[0]['value']
-                source[0]['value'] = source[0]['value'].replace(DEFAULT_IMAGE_TOKEN, '').strip()
-                source[0]['value'] = DEFAULT_IMAGE_TOKEN + conversation_lib.default_conversation.sep + conversation_lib.default_conversation.roles[0] + ": " + source[0]['value']
             for sentence in source:
+                if DEFAULT_IMAGE_TOKEN in sentence['value']:
+                    sentence['value'] = sentence['value'].replace(DEFAULT_IMAGE_TOKEN, '').strip()
+                    sentence['value'] = DEFAULT_IMAGE_TOKEN + '\n' + sentence['value']
+                    sentence['value'] = sentence['value'].strip()
+                    # if "mmtag" in conversation_lib.default_conversation.version:
+                    #     sentence['value'] = sentence['value'].replace(DEFAULT_IMAGE_TOKEN, '<Image>' + DEFAULT_IMAGE_TOKEN + '</Image>')
+                # replace_token = DEFAULT_IMAGE_TOKEN
                 replace_token = DEFAULT_IMAGE_PATCH_TOKEN * self.multimodal_cfg['image_token_len']
-                # if self.multimodal_cfg['use_im_start_end']:
                 replace_token = DEFAULT_IM_START_TOKEN + replace_token + DEFAULT_IM_END_TOKEN
-                sentence["value"] = str(sentence["value"]).replace(DEFAULT_IMAGE_TOKEN, replace_token)
+                sentence["value"] = sentence["value"].replace(DEFAULT_IMAGE_TOKEN, replace_token)
+
         return sources
+    
+    def preprocess_llama_2(
+        self,
+        sources,
+        has_image=True
+    ) :
+        conv = conversation_lib.conv_llava_llama_2.copy()
+        roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
+
+        # Apply prompt templates
+        conversations = []
+        for i, source in enumerate(sources):
+            if roles[source[0]["from"]] != conv.roles[0]:
+                # Skip the first one if it is not from human
+                source = source[1:]
+
+            conv.messages = []
+            for j, sentence in enumerate(source):
+                role = roles[sentence["from"]]
+                assert role == conv.roles[j % 2], f"{i}"
+                conv.append_message(role, sentence["value"])
+            conversations.append(conv.get_prompt())
+
+        # Tokenize conversations
+
+        # if has_image:
+        #     input_ids = torch.stack([tokenizer_image_token(prompt, tokenizer, return_tensors='pt') for prompt in conversations], dim=0)
+        # else:
+        #     input_ids = tokenizer(
+        #         conversations,
+        #         return_tensors="pt",
+        #         padding="longest",
+        #         max_length=tokenizer.model_max_length,
+        #         truncation=True,
+        #     ).input_ids
+        input_ids = self.tokenizer(
+                conversations,
+                return_tensors="pt",
+                padding="longest",
+                max_length=self.tokenizer.model_max_length,
+                truncation=True,
+            ).input_ids
+        targets = input_ids.clone()
+
+        assert conv.sep_style == conversation_lib.SeparatorStyle.LLAMA_2
+
+        # Mask targets
+        sep = "[/INST] "
+        for conversation, target in zip(conversations, targets):
+            total_len = int(target.ne(self.tokenizer.pad_token_id).sum())
+
+            rounds = conversation.split(conv.sep2)
+            cur_len = 1
+            target[:cur_len] = IGNORE_INDEX
+            for i, rou in enumerate(rounds):
+                if rou == "":
+                    break   
+                parts = rou.split(sep)
+            if len(parts) != 2:
+                break
+            parts[0] += sep
+
+            if has_image:
+                round_len = len(tokenizer_image_token(rou, self.tokenizer))
+                instruction_len = len(tokenizer_image_token(parts[0], self.tokenizer)) - 2
+            else:
+                round_len = len(self.tokenizer(rou).input_ids)
+                instruction_len = len(self.tokenizer(parts[0]).input_ids) - 2
+
+            target[cur_len : cur_len + instruction_len] = IGNORE_INDEX
+
+            cur_len += round_len
+        target[cur_len:] = IGNORE_INDEX
+
+        if cur_len < self.tokenizer.model_max_length:
+            if cur_len != total_len:
+                target[:] = IGNORE_INDEX
+                print(
+                    f"WARNING: tokenization mismatch: {cur_len} vs. {total_len}."
+                    f" (ignored)"
+                )
+        return dict(
+        input_ids=input_ids,
+        labels=targets,
+    )
+
+    # def multimodal_processor(self, sources):
+    #     for source in sources:
+    #         if self.multimodal_cfg['sep_image_conv_front']:
+    #             assert DEFAULT_IMAGE_TOKEN in source[0]['value']
+    #             source[0]['value'] = source[0]['value'].replace(DEFAULT_IMAGE_TOKEN, '').strip()
+    #             source[0]['value'] = DEFAULT_IMAGE_TOKEN + conversation_lib.default_conversation.sep + conversation_lib.default_conversation.roles[0] + ": " + source[0]['value']
+    #         for sentence in source:
+    #             replace_token = DEFAULT_IMAGE_PATCH_TOKEN * self.multimodal_cfg['image_token_len']
+    #             # if self.multimodal_cfg['use_im_start_end']:
+    #             replace_token = DEFAULT_IM_START_TOKEN + replace_token + DEFAULT_IM_END_TOKEN
+    #             sentence["value"] = str(sentence["value"]).replace(DEFAULT_IMAGE_TOKEN, replace_token)
+    #     return sources
 
     def _tokenize_fn(self, strings):
         """Tokenize a list of strings."""
@@ -203,7 +342,7 @@ class ConversationDataset(BaseDataset):
             conversations = [data]
 
         # align with fastchat & llava here, put the conversation into a list for tokenization
-        data_dict = self.token_processor(conversations)
+        data_dict = self.preprocess_llama_2(conversations)
         data_dict = dict(input_ids=data_dict["input_ids"][0], labels=data_dict["labels"][0])
         
         if isinstance(data, dict) and 'image' in data:
