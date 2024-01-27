@@ -13,11 +13,11 @@ class ModelArguments:
     pretrained_stage1_model: Optional[str] = field(default=None) # mlp &/ vision tower
     vision_select_layer: Optional[int] = field(default=-1)   # default to the last layer
     use_im_start_end: bool = field(default=False)
-    extra_model_args: dict = {
+    extra_model_args: dict = field(default={
         "tap_model_type": "tap_vit_b",
         "tap_checkpoint": "ckpts/tap/tap_vit_b_b45cbf.pkl",
         "concept_weights": "ckpts/tap/merged_2560.pkl"
-    }
+    })
 
 
 @dataclass
