@@ -30,7 +30,7 @@ CONVERSATION_DATA = {
     }, 
 
     'llava_v1.5_pretrain': {
-        'images': "data/LLaVA-Pretrain/llava_images",
+        'images': "data/LLaVA-Pretrain/llava_images/",
         'annotations': "data/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json",
     },
     'llava_v1.5_finetune': {
@@ -38,7 +38,7 @@ CONVERSATION_DATA = {
         'annotations': "data/LLaVA-v1.5/llava_v1_5_mix665k.json",
     },
     'refer_coco': {
-        'images': "refercocos/images/tran2014",
+        'images': "refercocos/images/tran2014/",
         'annotations': "refercocos/REC_ref3_train.json",
     },
     'pdf': {
