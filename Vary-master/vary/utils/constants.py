@@ -35,7 +35,7 @@ CONVERSATION_DATA = {
     },
     'llava_ft': {
         'images': "",
-        'annotations': "data/LLAVA-v1.5/llava_instruct_150k.json",
+        'annotations': "data/LLaVA-v1.5/llava_v1_5_mix665k.json",
     },
     'pdf': {
         'images': "",

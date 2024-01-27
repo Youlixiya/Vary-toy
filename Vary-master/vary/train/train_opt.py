@@ -25,6 +25,11 @@ from vary.data import make_supervised_data_module
 from vary.utils.arguments import *
 from vary.utils.constants import *
 from vary.model.vision_encoder.sam import build_sam_vit_b
+try:
+    import flash_attn
+    use_flash_attention_2 =True
+except:
+    use_flash_attention_2 = False
 
 def train():
     parser = transformers.HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
@@ -34,7 +39,7 @@ def train():
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_args.model_name_or_path, use_fast=False, padding_side="right", model_max_length=training_args.model_max_length)
 
 
-    model = varyOPTForCausalLM.from_pretrained(model_args.model_name_or_path)
+    model = varyOPTForCausalLM.from_pretrained(model_args.model_name_or_path, use_flash_attention_2=use_flash_attention_2)
 
 
 
@@ -80,9 +85,9 @@ def train():
             p.requires_grad = True
 
 
-        if not model_args.freeze_vision_tower:
+    if model_args.freeze_vision_tower:
 
-            model.get_model().vision_tower.requires_grad_(True)
+        model.get_model().vision_tower.requires_grad_(False)
 
                 
     params_grad = [p.numel() for n, p in model.named_parameters() if p.requires_grad]

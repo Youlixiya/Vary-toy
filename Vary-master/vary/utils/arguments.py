@@ -8,11 +8,14 @@ class ModelArguments:
     model_name_or_path: Optional[str] = field(default="facebook/opt-125m")
     use_cache: bool = field(default=False)
     vision_tower: Optional[str] = field(default="~/.cache/huggingface/hub/models--openai--clip-vit-large-patch14/snapshots/8d052a0f05efbaefbc9e8786ba291cfdf93e5bff/")
-    freeze_vision_tower: bool = field(default=False)
+    freeze_vision_tower: bool = field(default=True)
     freeze_lm_model: bool = field(default=False)
     pretrained_stage1_model: Optional[str] = field(default=None) # mlp &/ vision tower
     vision_select_layer: Optional[int] = field(default=-1)   # default to the last layer
     use_im_start_end: bool = field(default=False)
+    tap_model_type: str = field(default="tap_vit_b")
+    tap_checkpoint: str = field(default="ckpts/tap/tap_vit_b_b45cbf.pkl")
+    concept_weights: str = field(default="ckpts/tap/merged_2560.pkl")
 
 
 @dataclass
