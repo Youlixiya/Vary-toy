@@ -30,10 +30,13 @@ CONVERSATION_DATA = {
     }, 
 
     'cc665k': {
-        'images': "/path_to/LLaVA1.5/images/",
-        'annotations': "/path_to/LLaVA1.5/llava_v1_5_66k.json",
+        'images': "data/LLaVA-Pretrain/llava_images",
+        'annotations': "data/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json",
     },
-
+    'llava_ft': {
+        'images': "",
+        'annotations': "data/LLAVA-v1.5/llava_instruct_150k.json",
+    },
     'pdf': {
         'images': "",
         'annotations': "",

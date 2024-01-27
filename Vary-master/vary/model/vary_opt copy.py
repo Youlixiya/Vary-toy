@@ -36,8 +36,6 @@ from transformers import OPTConfig, OPTModel, OPTForCausalLM
 
 from vary.model.plug.transforms import train_transform, test_transform
 
-from tokenize_anything import model_registry
-
 
 
 class varyConfig(OPTConfig):
@@ -47,16 +45,11 @@ class varyConfig(OPTConfig):
 class varyOPTModel(OPTModel):
     config_class = varyConfig
 
-    def __init__(self, config: OPTConfig, **kwargs):
+    def __init__(self, config: OPTConfig):
         super(varyOPTModel, self).__init__(config)
-        for key, value in kwargs:
-            setattr(config. key, value)
-        self.config = config
-        # self.vision_tower = build_sam_vit_b()
-        self.tap = model_registry[config.tap_model_type](checkpoint=config.tap_checkpoint)
-        self.tap.concept_projector.reset_weights(config.concept_weights)
-        self.tap.text_decoder.reset_cache(max_batch_size=8)
-        self.vision_tower = self.tap.image_encoder
+
+
+        self.vision_tower = build_sam_vit_b()
 
         self.mm_projector = nn.Linear(1024, 768)
 
@@ -137,9 +130,9 @@ class varyOPTModel(OPTModel):
             image_features = []
             for image in images:
 
-                with torch.set_grad_enabled(False):
+                with torch.set_grad_enabled(True):
                     cnn_feature = vision_tower(image[1])
-                    cnn_feature = cnn_feature[0].flatten(2).permute(0, 2, 1)
+                    cnn_feature = cnn_feature.flatten(2).permute(0, 2, 1)
                     image_feature_final = cnn_feature
 
                 image_features.append(image_feature_final)

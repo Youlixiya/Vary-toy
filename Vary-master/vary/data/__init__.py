@@ -42,11 +42,11 @@ class DataCollatorForSupervisedDataset(object):
 
 def make_supervised_data_module(interleave, with_box, tokenizer, data_args):
 
-    if data_args.conversation_version == 'mpt':
-        from vary.data.conversation_dataset_qwen import ConversationDataset
+    if data_args.conversation_version == 'conversation':
+        from vary.data.conversation_dataset import ConversationDataset
         dataset_cls = ConversationDataset
-    elif data_args.conversation_version == 'opt':
-        from vary.data.caption_opt import CaptionDataset
+    elif data_args.conversation_version == 'caption':
+        from vary.data.caption_dataset import CaptionDataset
         dataset_cls = CaptionDataset
 
     train_dataset = dataset_cls(
