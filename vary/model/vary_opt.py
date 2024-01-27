@@ -36,8 +36,8 @@ from transformers import OPTConfig, OPTModel, OPTForCausalLM
 
 from vary.model.plug.transforms import train_transform, test_transform
 
-from tokenize_anything import model_registry
-
+# from tokenize_anything import model_registry
+from segment_anything import SamPredictor, sam_model_registry
 
 
 class varyConfig(OPTConfig):
@@ -55,10 +55,12 @@ class varyOPTModel(OPTModel):
             
         self.config = config
         # self.vision_tower = build_sam_vit_b()
-        self.tap = model_registry[config.tap_model_type](checkpoint=config.tap_checkpoint).eval()
-        self.tap.concept_projector.reset_weights(config.concept_weights)
-        self.tap.text_decoder.reset_cache(max_batch_size=8)
-        self.vision_tower = self.tap.image_encoder
+        # self.tap = model_registry[config.tap_model_type](checkpoint=config.tap_checkpoint).eval()
+        # self.tap.concept_projector.reset_weights(config.concept_weights)
+        # self.tap.text_decoder.reset_cache(max_batch_size=8)
+        # self.vision_tower = self.tap.image_encoder
+        sam = sam_model_registry[config.sam_model_type](checkpoint=config.sam_checkpoint).eval()
+        self.vision_tower = self.sam.image_encoder
 
         self.mm_projector = nn.Linear(1024, 768)
 
