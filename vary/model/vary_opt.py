@@ -75,7 +75,7 @@ class varyOPTModel(OPTModel):
 
         # 224*224
         # image_processor do not used in opt
-        image_processor = CLIPImageProcessor.from_pretrained('/cache/vit-large-patch14')
+        image_processor = CLIPImageProcessor.from_pretrained('./ckpts/vit-large-patch14')
         # 1024*1024
 
         image_processor_high = train_transform
