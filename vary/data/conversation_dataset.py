@@ -134,7 +134,7 @@ class ConversationDataset(BaseDataset):
         input_ids = conversations_tokenized["input_ids"]
 
         # input_ids = torch.stack([tokenizer_image_token(prompt, tokenizer, return_tensors='pt') for prompt in conversations], dim=0)
-        targets = input_ids.clone()
+        targets = copy.deepcopy(input_ids)
         assert conv.sep_style == conversation_lib.SeparatorStyle.MPT
 
         # Mask targets
