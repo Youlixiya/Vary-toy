@@ -24,6 +24,7 @@ class Conversation:
     sep: str = "###"
     sep2: str = None
     version: str = "Unknown"
+    special_sep: str = "###"
 
     skip_next: bool = False
 
@@ -68,7 +69,7 @@ class Conversation:
                     ret += role + message + self.sep
                 else:
                     ret += role
-        elif self.sep_style in [SeparatorStyle.LLAMA_2, SeparatorStyle.OPT]:
+        elif self.sep_style in [SeparatorStyle.LLAMA_2]:
             wrap_sys = lambda msg: f"<<SYS>>\n{msg}\n<</SYS>>\n\n"
             wrap_inst = lambda msg: f"[INST] {msg} [/INST]"
             ret = ""
@@ -89,6 +90,29 @@ class Conversation:
                 else:
                     ret += ""
             ret = ret.lstrip(self.sep)
+        
+        elif self.sep_style in [SeparatorStyle.OPT]:
+            wrap_sys = lambda msg: f"<<SYS>>\n{msg}\n<</SYS>>\n\n"
+            wrap_inst = lambda msg: f"[INST] {msg} [/INST]"
+            ret = ""
+
+            for i, (role, message) in enumerate(messages):
+                if i == 0:
+                    assert message, "first message should not be none"
+                    assert role == self.roles[0], "first message should come from user"
+                if message:
+                    if type(message) is tuple:
+                        message, _, _ = message
+                    if i == 0: message = wrap_sys(self.system) + message
+                    if i % 2 == 0:
+                        message = wrap_inst(message)
+                        ret += self.special_sep + message
+                    else:
+                        ret += " " + message + " " + self.sep2
+                else:
+                    ret += ""
+            ret = ret.lstrip(self.special_sep)
+        
         elif self.sep_style == SeparatorStyle.PLAIN:
             seps = [self.sep, self.sep2]
             ret = self.system

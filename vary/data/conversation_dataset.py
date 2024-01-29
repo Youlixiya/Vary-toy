@@ -160,6 +160,7 @@ class ConversationDataset(BaseDataset):
             total_len = int(target.ne(self.tokenizer.pad_token_id).sum())
 
             rounds = conversation.split(conv.sep2)
+            rounds = [round.replace(conv.special_sep, conv.sep) for round in rounds]
             cur_len = 1
             target[:cur_len] = IGNORE_INDEX
             for i, rou in enumerate(rounds):
