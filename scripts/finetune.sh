@@ -12,7 +12,7 @@ deepspeed   --include "localhost:0,2,3,4" vary/train/train_opt.py\
             --gradient_accumulation_steps 4\
             --evaluation_strategy "no"\
             --save_strategy "steps"\
-            --save_steps 5000\
+            --save_steps 24000\
             --save_total_limit 1\
             --weight_decay 0.\
             --warmup_ratio 0.03\

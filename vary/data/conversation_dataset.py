@@ -342,7 +342,7 @@ class ConversationDataset(BaseDataset):
             conversations = [data]
 
         # align with fastchat & llava here, put the conversation into a list for tokenization
-        data_dict = self.preprocess_llama_2(conversations)
+        data_dict = self.preprocess_opt(conversations)
         data_dict = dict(input_ids=data_dict["input_ids"][0], labels=data_dict["labels"][0])
         
         if isinstance(data, dict) and 'image' in data:
