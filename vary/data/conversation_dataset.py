@@ -55,8 +55,8 @@ class ConversationDataset(BaseDataset):
     def __init__(self, datasets, tokenizer, multimodal_cfg):
         super(ConversationDataset, self).__init__(datasets, tokenizer, multimodal_cfg)
         # v0 version format conversation
-        conversation_lib.default_conversation = conversation_lib.conv_templates["llava_llama_2"]
-        logging.warning("Formatting inputs into conversation type: mpt-fixed")
+        conversation_lib.default_conversation = conversation_lib.conv_templates["opt"]
+        logging.warning("Formatting inputs into conversation type: opt-fixed")
         logging.warning("Loading data...")
 
         list_data_dict = []
@@ -109,12 +109,12 @@ class ConversationDataset(BaseDataset):
 
         return sources
     
-    def preprocess_llama_2(
+    def preprocess_opt(
         self,
         sources,
         has_image=True
     ) :
-        conv = conversation_lib.conv_llava_llama_2.copy()
+        conv = conversation_lib.conv_llava_opt.copy()
         roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
 
         # Apply prompt templates
@@ -152,7 +152,7 @@ class ConversationDataset(BaseDataset):
             ).input_ids
         targets = input_ids.clone()
 
-        assert conv.sep_style == conversation_lib.SeparatorStyle.LLAMA_2
+        assert conv.sep_style == conversation_lib.SeparatorStyle.OPT
 
         # Mask targets
         sep = "[/INST] "

@@ -1,7 +1,7 @@
 # --model_name_or_path ./ckpts/llava-opt-v1.0-125m-pretrain\ \
 
 deepspeed   --include "localhost:0,2,3,4" vary/train/train_opt.py\
-            --deepspeed zero_config/zero3.json\
+            --deepspeed zero_config/zero2.json\
             --model_name_or_path facebook/opt-125m \
             --conversation_version conversation\
             --freeze_vision_tower True\
@@ -19,7 +19,7 @@ deepspeed   --include "localhost:0,2,3,4" vary/train/train_opt.py\
             --lr_scheduler_type "cosine"\
             --logging_steps 1\
             --tf32 True\
-            --model_max_length 4096\
+            --model_max_length 2048\
             --gradient_checkpointing True\
             --dataloader_num_workers 4\
             --report_to none\
