@@ -296,7 +296,7 @@ conv_llava_opt = Conversation(
     version="opt",
     messages=(),
     offset=0,
-    sep_style=SeparatorStyle.LLAMA_2,
+    sep_style=SeparatorStyle.OPT,
     sep="</s>",
     sep2="</s>",
 )
