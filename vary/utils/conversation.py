@@ -68,7 +68,7 @@ class Conversation:
                     ret += role + message + self.sep
                 else:
                     ret += role
-        elif self.sep_style == SeparatorStyle.LLAMA_2:
+        elif self.sep_style in [SeparatorStyle.LLAMA_2, SeparatorStyle.OPT]:
             wrap_sys = lambda msg: f"<<SYS>>\n{msg}\n<</SYS>>\n\n"
             wrap_inst = lambda msg: f"[INST] {msg} [/INST]"
             ret = ""
